@@ -1,0 +1,36 @@
+#!/bin/bash 
+ 
+# Define the image names and container names 
+image1="image1" 
+image2="image2" 
+container1="container1" 
+container2="container2" 
+ 
+# Check if Docker is installed 
+if ! command -v docker > /dev/null 2>&1; then 
+  echo "Docker is not installed. Please install Docker and try again." 
+  exit 1 
+fi 
+ 
+# Pull the images 
+docker pull $image1 
+docker pull $image2 
+docker pull nginx:alpine 
+ 
+# Create and start the first container 
+docker run -itd --name $container1 $image1 
+ 
+# Create and start the second container 
+docker run -itd --name $container2 $image2 
+ 
+# Create a network for the containers 
+docker network create mynetwork 
+ 
+# Connect the containers to the network 
+docker network connect mynetwork $container1 
+docker network connect mynetwork $container2 
+ 
+# Start the load balancer service 
+docker run -itd --name loadbalancer --network mynetwork -p 80:80 -v $(pwd)/nginx.conf:/etc/nginx/nginx.conf nginx:alpine 
+ 
+echo "Two Docker containers and a layer 7 load balancer have been deployed successfully."
